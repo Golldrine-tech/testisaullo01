@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as CandidatoRouteImport } from './routes/candidato'
 import { Route as BemVindoRouteImport } from './routes/bem-vindo'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AtivarTokenRouteImport } from './routes/ativar.$token'
 
+const CandidatoRoute = CandidatoRouteImport.update({
+  id: '/candidato',
+  path: '/candidato',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BemVindoRoute = BemVindoRouteImport.update({
   id: '/bem-vindo',
   path: '/bem-vindo',
@@ -32,35 +38,46 @@ const AtivarTokenRoute = AtivarTokenRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/bem-vindo': typeof BemVindoRoute
+  '/candidato': typeof CandidatoRoute
   '/ativar/$token': typeof AtivarTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bem-vindo': typeof BemVindoRoute
+  '/candidato': typeof CandidatoRoute
   '/ativar/$token': typeof AtivarTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/bem-vindo': typeof BemVindoRoute
+  '/candidato': typeof CandidatoRoute
   '/ativar/$token': typeof AtivarTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/bem-vindo' | '/ativar/$token'
+  fullPaths: '/' | '/bem-vindo' | '/candidato' | '/ativar/$token'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/bem-vindo' | '/ativar/$token'
-  id: '__root__' | '/' | '/bem-vindo' | '/ativar/$token'
+  to: '/' | '/bem-vindo' | '/candidato' | '/ativar/$token'
+  id: '__root__' | '/' | '/bem-vindo' | '/candidato' | '/ativar/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BemVindoRoute: typeof BemVindoRoute
+  CandidatoRoute: typeof CandidatoRoute
   AtivarTokenRoute: typeof AtivarTokenRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/candidato': {
+      id: '/candidato'
+      path: '/candidato'
+      fullPath: '/candidato'
+      preLoaderRoute: typeof CandidatoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/bem-vindo': {
       id: '/bem-vindo'
       path: '/bem-vindo'
@@ -88,8 +105,18 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BemVindoRoute: BemVindoRoute,
+  CandidatoRoute: CandidatoRoute,
   AtivarTokenRoute: AtivarTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
