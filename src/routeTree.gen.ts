@@ -9,9 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as BemVindoRouteImport } from './routes/bem-vindo'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AtivarTokenRouteImport } from './routes/ativar.$token'
 
+const BemVindoRoute = BemVindoRouteImport.update({
+  id: '/bem-vindo',
+  path: '/bem-vindo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -25,32 +31,43 @@ const AtivarTokenRoute = AtivarTokenRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/bem-vindo': typeof BemVindoRoute
   '/ativar/$token': typeof AtivarTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/bem-vindo': typeof BemVindoRoute
   '/ativar/$token': typeof AtivarTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/bem-vindo': typeof BemVindoRoute
   '/ativar/$token': typeof AtivarTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ativar/$token'
+  fullPaths: '/' | '/bem-vindo' | '/ativar/$token'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ativar/$token'
-  id: '__root__' | '/' | '/ativar/$token'
+  to: '/' | '/bem-vindo' | '/ativar/$token'
+  id: '__root__' | '/' | '/bem-vindo' | '/ativar/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BemVindoRoute: typeof BemVindoRoute
   AtivarTokenRoute: typeof AtivarTokenRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/bem-vindo': {
+      id: '/bem-vindo'
+      path: '/bem-vindo'
+      fullPath: '/bem-vindo'
+      preLoaderRoute: typeof BemVindoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BemVindoRoute: BemVindoRoute,
   AtivarTokenRoute: AtivarTokenRoute,
 }
 export const routeTree = rootRouteImport
