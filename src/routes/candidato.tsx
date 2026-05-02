@@ -5,7 +5,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { registrarEvento, obterGPS } from "@/utils/api";
 
 const searchSchema = z.object({
-  ref: fallback(z.string(), "").default(""),
+  pessoa_id: fallback(z.string(), "").default(""),
 });
 
 export const Route = createFileRoute("/candidato")({
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/candidato")({
 });
 
 function CandidatoPage() {
-  const { ref } = Route.useSearch();
+  const { pessoa_id } = Route.useSearch();
 
   useEffect(() => {
     let cancelado = false;
@@ -31,7 +31,8 @@ function CandidatoPage() {
       if (cancelado) return;
       registrarEvento({
         tipo: "APROXIMACAO",
-        ref: ref || null,
+        canal: "NFC",
+        pessoa_id: pessoa_id || null,
         url: typeof window !== "undefined" ? window.location.href : null,
         user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
         latitude: gps.latitude,
@@ -43,11 +44,11 @@ function CandidatoPage() {
     return () => {
       cancelado = true;
     };
-  }, [ref]);
+  }, [pessoa_id]);
 
   const shareUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}/candidato${ref ? `?ref=${encodeURIComponent(ref)}` : ""}`
+      ? `${window.location.origin}/candidato${pessoa_id ? `?pessoa_id=${encodeURIComponent(pessoa_id)}` : ""}`
       : "";
   const shareText = "Conheça o candidato e participe da campanha!";
 
@@ -55,7 +56,7 @@ function CandidatoPage() {
     registrarEvento({
       tipo: "COMPARTILHAMENTO",
       canal,
-      ref: ref || null,
+      pessoa_id: pessoa_id || null,
       url: shareUrl,
       timestamp: new Date().toISOString(),
     });
@@ -127,9 +128,9 @@ function CandidatoPage() {
           </div>
         </section>
 
-        {ref && (
+        {pessoa_id && (
           <p className="text-xs text-muted-foreground text-center">
-            Indicado por: {ref}
+            Indicado por: {pessoa_id}
           </p>
         )}
       </main>
