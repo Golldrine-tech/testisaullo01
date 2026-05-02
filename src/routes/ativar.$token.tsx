@@ -32,7 +32,7 @@ function AtivarPage() {
         if ("acao" in res && res.acao === "mostrar_formulario") {
           setEstado({ tipo: "formulario" });
         } else if ("acao" in res && res.acao === "redirecionar_lp") {
-          navigate({ to: "/candidato", search: { ref: res.pessoa_id } });
+          navigate({ to: "/candidato", search: { pessoa_id: res.pessoa_id } });
         } else if ("erro" in res) {
           setEstado({ tipo: "erro", msg: res.erro });
         } else {
