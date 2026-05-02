@@ -6,6 +6,8 @@ export type VerificarTokenResponse =
   | { erro: string };
 
 export async function verificarToken(token: string): Promise<VerificarTokenResponse> {
+  // [N8N - Fluxo 1] GET /webhook/verificar-token
+  // Responsável por: checar status do token no banco, retornar acao: mostrar_formulario | redirecionar_lp
   const res = await fetch(
     `${BASE_URL}/webhook/verificar-token?token=${encodeURIComponent(token)}`,
     { method: "GET" },
@@ -22,6 +24,8 @@ export type CadastrarResponse =
   | { erro: string };
 
 export async function cadastrar(payload: Record<string, unknown>): Promise<CadastrarResponse> {
+  // [N8N - Fluxo 2] POST /webhook/cadastrar
+  // Responsável por: validar recrutador, gerar ID, inserir pessoa, ativar cartão, enviar WhatsApp de boas-vindas (Evolution API)
   const res = await fetch(`${BASE_URL}/webhook/cadastrar`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -37,6 +41,8 @@ export async function cadastrar(payload: Record<string, unknown>): Promise<Cadas
 }
 
 export function registrarEvento(payload: Record<string, unknown>): void {
+  // [N8N - Fluxo 3] POST /webhook/evento
+  // Responsável por: registrar APROXIMACAO ou COMPARTILHAMENTO no banco com GPS e canal
   // Fire-and-forget
   try {
     fetch(`${BASE_URL}/webhook/evento`, {
