@@ -42,7 +42,7 @@ function BemVindoPage() {
           equipe.
         </p>
         <button
-          onClick={() => navigate({ to: "/candidato", search: { ref: id } })}
+          onClick={() => navigate({ to: "/candidato", search: { pessoa_id: id } })}
           className="mt-6 bg-primary text-primary-foreground rounded px-4 py-2 font-medium"
         >
           Ver a página do candidato
