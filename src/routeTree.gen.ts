@@ -13,7 +13,6 @@ import { Route as CandidatoRouteImport } from './routes/candidato'
 import { Route as BemVindoRouteImport } from './routes/bem-vindo'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AtivarTokenRouteImport } from './routes/ativar.$token'
-import { Route as AtivarRouteImport } from './routes/ativar.'
 
 const CandidatoRoute = CandidatoRouteImport.update({
   id: '/candidato',
@@ -35,24 +34,17 @@ const AtivarTokenRoute = AtivarTokenRouteImport.update({
   path: '/ativar/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AtivarRoute = AtivarRouteImport.update({
-  id: '/ativar/',
-  path: '/ativar/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/bem-vindo': typeof BemVindoRoute
   '/candidato': typeof CandidatoRoute
-  '/ativar/': typeof AtivarRoute
   '/ativar/$token': typeof AtivarTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bem-vindo': typeof BemVindoRoute
   '/candidato': typeof CandidatoRoute
-  '/ativar': typeof AtivarRoute
   '/ativar/$token': typeof AtivarTokenRoute
 }
 export interface FileRoutesById {
@@ -60,28 +52,20 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/bem-vindo': typeof BemVindoRoute
   '/candidato': typeof CandidatoRoute
-  '/ativar/': typeof AtivarRoute
   '/ativar/$token': typeof AtivarTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/bem-vindo' | '/candidato' | '/ativar/' | '/ativar/$token'
+  fullPaths: '/' | '/bem-vindo' | '/candidato' | '/ativar/$token'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/bem-vindo' | '/candidato' | '/ativar' | '/ativar/$token'
-  id:
-    | '__root__'
-    | '/'
-    | '/bem-vindo'
-    | '/candidato'
-    | '/ativar/'
-    | '/ativar/$token'
+  to: '/' | '/bem-vindo' | '/candidato' | '/ativar/$token'
+  id: '__root__' | '/' | '/bem-vindo' | '/candidato' | '/ativar/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BemVindoRoute: typeof BemVindoRoute
   CandidatoRoute: typeof CandidatoRoute
-  AtivarRoute: typeof AtivarRoute
   AtivarTokenRoute: typeof AtivarTokenRoute
 }
 
@@ -115,13 +99,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AtivarTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/ativar/': {
-      id: '/ativar/'
-      path: '/ativar'
-      fullPath: '/ativar/'
-      preLoaderRoute: typeof AtivarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -129,7 +106,6 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BemVindoRoute: BemVindoRoute,
   CandidatoRoute: CandidatoRoute,
-  AtivarRoute: AtivarRoute,
   AtivarTokenRoute: AtivarTokenRoute,
 }
 export const routeTree = rootRouteImport
