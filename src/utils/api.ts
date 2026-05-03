@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_N8N_URL || "https://n8n.vota.am";
+const BASE_URL = import.meta.env.VITE_N8N_URL || "https://saullo-n8n-webhook.bbxa48.easypanel.host";
 
 export type VerificarTokenResponse =
   | { acao: "mostrar_formulario" }
@@ -6,10 +6,9 @@ export type VerificarTokenResponse =
   | { erro: string };
 
 export async function verificarToken(token: string): Promise<VerificarTokenResponse> {
-  // [N8N - Fluxo 1] GET /webhook/verificar-token
-  // Responsável por: checar status do token no banco, retornar acao: mostrar_formulario | redirecionar_lp
+  // [N8N - Fluxo 1] GET /webhook/596b6ae9-0685-4c0e-9fe3-2fca556a87f6/ativar/:token
   const res = await fetch(
-    `${BASE_URL}/webhook/verificar-token?token=${encodeURIComponent(token)}`,
+    `${BASE_URL}/webhook/596b6ae9-0685-4c0e-9fe3-2fca556a87f6/ativar/${encodeURIComponent(token)}`,
     { method: "GET" },
   );
   if (!res.ok) {
@@ -25,7 +24,6 @@ export type CadastrarResponse =
 
 export async function cadastrar(payload: Record<string, unknown>): Promise<CadastrarResponse> {
   // [N8N - Fluxo 2] POST /webhook/cadastrar
-  // Responsável por: validar recrutador, gerar ID, inserir pessoa, ativar cartão, enviar WhatsApp de boas-vindas (Evolution API)
   const res = await fetch(`${BASE_URL}/webhook/cadastrar`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -41,11 +39,10 @@ export async function cadastrar(payload: Record<string, unknown>): Promise<Cadas
 }
 
 export function registrarEvento(payload: Record<string, unknown>): void {
-  // [N8N - Fluxo 3] POST /webhook/evento
-  // Responsável por: registrar APROXIMACAO ou COMPARTILHAMENTO no banco com GPS e canal
+  // [N8N - Fluxo 3] POST /webhook/27aed129-4894-4d63-a426-5c87b9880210
   // Fire-and-forget
   try {
-    fetch(`${BASE_URL}/webhook/evento`, {
+    fetch(`${BASE_URL}/webhook/27aed129-4894-4d63-a426-5c87b9880210`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
