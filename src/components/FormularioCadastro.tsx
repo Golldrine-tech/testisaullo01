@@ -86,7 +86,6 @@ export function FormularioCadastro({ token }: Props) {
     const payload: Record<string, unknown> = {
       token,
       id_recrutador: idRecrutador.trim(),
-      cargo_esperado: cargo,
       nome: nome.trim(),
       cpf,
       email: email.trim(),
@@ -106,7 +105,8 @@ export function FormularioCadastro({ token }: Props) {
       if ("sucesso" in res && res.sucesso) {
         navigate({
           to: "/bem-vindo",
-          search: { id: res.id_gerado, cargo: res.cargo, nome: res.nome },
+          search: { id: res.id_gerado, cargo: res.cargo },
+          state: { nome: res.nome },
         });
       } else if ("erro" in res) {
         setErroForm(res.erro);

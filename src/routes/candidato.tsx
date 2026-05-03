@@ -5,7 +5,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { registrarEvento, obterGPS } from "@/utils/api";
 
 const searchSchema = z.object({
-  pessoa_id: fallback(z.string(), "").default(""),
+  ref: fallback(z.string(), "").default(""),
 });
 
 export const Route = createFileRoute("/candidato")({
@@ -57,7 +57,7 @@ const propostas = [
 ];
 
 function CandidatoPage() {
-  const { pessoa_id } = Route.useSearch();
+  const { ref } = Route.useSearch();
   const [feedback, setFeedback] = useState<string | null>(null);
 
   useEffect(() => {
@@ -68,7 +68,7 @@ function CandidatoPage() {
       registrarEvento({
         tipo: "APROXIMACAO",
         canal: "NFC",
-        pessoa_id: pessoa_id || null,
+        pessoa_id: ref || null,
         url: typeof window !== "undefined" ? window.location.href : null,
         user_agent: typeof navigator !== "undefined" ? navigator.userAgent : null,
         latitude: gps.latitude,
@@ -80,11 +80,11 @@ function CandidatoPage() {
     return () => {
       cancelado = true;
     };
-  }, [pessoa_id]);
+  }, [ref]);
 
   const shareUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}/candidato${pessoa_id ? `?pessoa_id=${encodeURIComponent(pessoa_id)}` : ""}`
+      ? `${window.location.origin}/candidato${ref ? `?ref=${encodeURIComponent(ref)}` : ""}`
       : "";
   const shareText = "Conheça o candidato e participe da campanha!";
 
@@ -92,7 +92,7 @@ function CandidatoPage() {
     registrarEvento({
       tipo: "COMPARTILHAMENTO",
       canal,
-      pessoa_id: pessoa_id || null,
+      pessoa_id: ref || null,
       url: shareUrl,
       timestamp: new Date().toISOString(),
     });
@@ -350,13 +350,13 @@ function CandidatoPage() {
             )}
           </section>
 
-          {pessoa_id && (
+          {ref && (
             <div className="rounded-xl border border-[#D3D1C7]/70 bg-white/70 px-4 py-2.5 text-center backdrop-blur">
               <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#5F5E5A]">
                 Indicado por
               </p>
               <p className="mt-0.5 font-mono text-xs font-bold tracking-wider text-[#042C53]">
-                {pessoa_id}
+                {ref}
               </p>
             </div>
           )}

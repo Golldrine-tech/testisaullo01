@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouterState } from "@tanstack/react-router";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 
 const searchSchema = z.object({
   id: fallback(z.string(), "").default(""),
   cargo: fallback(z.string(), "").default(""),
-  nome: fallback(z.string(), "").default(""),
 });
 
 export const Route = createFileRoute("/bem-vindo")({
@@ -70,10 +69,11 @@ function tema(cargo: string) {
 }
 
 function BemVindoPage() {
-  const { id, cargo, nome } = Route.useSearch();
+  const { id, cargo } = Route.useSearch();
   const navigate = useNavigate();
   const [copiado, setCopiado] = useState(false);
   const t = tema(cargo);
+  const nome = useRouterState({ select: (s) => (s.location.state as { nome?: string } | null)?.nome ?? "" });
 
   async function copiar() {
     try {
@@ -237,7 +237,7 @@ function BemVindoPage() {
 
         {/* CTA */}
         <button
-          onClick={() => navigate({ to: "/candidato", search: { pessoa_id: id } })}
+          onClick={() => navigate({ to: "/candidato", search: { ref: id } })}
           className="group relative mt-8 w-full overflow-hidden rounded-xl bg-gradient-to-r from-[#185FA5] via-[#2273C2] to-[#378ADD] px-5 py-4 text-[15px] font-bold text-white shadow-[0_14px_32px_-10px_rgba(24,95,165,0.6)] ring-1 ring-[#185FA5]/40 transition-all duration-200 hover:brightness-110 active:scale-[0.985]"
         >
           <span className="inline-flex items-center justify-center gap-2 tracking-wide">
