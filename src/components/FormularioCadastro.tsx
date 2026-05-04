@@ -6,6 +6,86 @@ import { cadastrar, obterGPS } from "@/utils/api";
 
 type Props = { token: string };
 
+const inputBase =
+  "w-full rounded-xl border border-[#D3D1C7] bg-white px-4 py-3.5 text-[15px] text-[#042C53] placeholder:text-[#5F5E5A]/50 shadow-[0_1px_2px_rgba(4,44,83,0.04)] transition-all duration-150 focus:outline-none focus:border-[#185FA5] focus:ring-4 focus:ring-[#378ADD]/15 hover:border-[#5F5E5A]/40";
+
+function Field({
+  id,
+  label,
+  children,
+  hint,
+}: {
+  id: string;
+  label: string;
+  children: React.ReactNode;
+  hint?: React.ReactNode;
+}) {
+  return (
+    <div className="group relative">
+      <label
+        htmlFor={id}
+        className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-[#5F5E5A]"
+      >
+        {label}
+      </label>
+      {children}
+      {hint}
+    </div>
+  );
+}
+
+function Stepper({ etapaAtual }: { etapaAtual: number }) {
+  const steps = [
+    { n: 1, label: "Código" },
+    { n: 2, label: "Seus dados" },
+    { n: 3, label: "Confirmação" },
+  ];
+  return (
+    <div className="relative">
+      <div className="absolute left-4 right-4 top-4 h-[2px] bg-[#E5E2D8]">
+        <div
+          className="h-full bg-gradient-to-r from-[#185FA5] to-[#378ADD] transition-all duration-500"
+          style={{ width: `${((etapaAtual - 1) / (steps.length - 1)) * 100}%` }}
+        />
+      </div>
+      <ol className="relative flex items-start justify-between">
+        {steps.map((s) => {
+          const concluida = s.n < etapaAtual;
+          const ativa = s.n === etapaAtual;
+          return (
+            <li key={s.n} className="flex flex-col items-center gap-2">
+              <div
+                className={`relative flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ${
+                  concluida
+                    ? "bg-[#0F6E56] text-white shadow-[0_4px_12px_rgba(15,110,86,0.35)]"
+                    : ativa
+                      ? "bg-gradient-to-br from-[#185FA5] to-[#378ADD] text-white shadow-[0_4px_14px_rgba(24,95,165,0.45)] ring-4 ring-[#378ADD]/20"
+                      : "bg-white text-[#5F5E5A] ring-1 ring-[#D3D1C7]"
+                }`}
+              >
+                {concluida ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12l5 5L20 7" />
+                  </svg>
+                ) : (
+                  s.n
+                )}
+              </div>
+              <span
+                className={`text-[11px] font-semibold tracking-wide ${
+                  ativa || concluida ? "text-[#042C53]" : "text-[#5F5E5A]"
+                }`}
+              >
+                {s.label}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+}
+
 const cargoTheme: Record<
   Exclude<Cargo, null>,
   { badge: string; ring: string; icon: string; descricao: string }
@@ -62,26 +142,50 @@ export function FormularioCadastro({ token }: Props) {
     setErroRecrutador(erro);
   }
 
+  function handleChangeRecrutador(valor: string) {
+    const v = valor.toUpperCase();
+    setIdRecrutador(v);
+    const { cargo: c, erro } = resolverCargo(v.trim());
+    setCargo(c);
+    if (v.trim().length > 0) setErroRecrutador(erro);
+    else setErroRecrutador(null);
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setErroForm(null);
 
-    if (!cargo) {
-      setErroRecrutador("Informe um código de recrutador válido.");
+    // Re-resolve caso o blur não tenha disparado
+    const { cargo: cargoAtual, erro: erroAtual } = resolverCargo(idRecrutador.trim());
+    if (!cargo && cargoAtual) {
+      setCargo(cargoAtual);
+      setErroRecrutador(null);
+    }
+    const cargoFinal = cargo ?? cargoAtual;
+
+    if (!cargoFinal) {
+      setErroRecrutador(erroAtual ?? "Informe um código de recrutador válido.");
       return;
     }
     if (!nome.trim()) return setErroForm("Informe o nome.");
     if (!validarCPF(cpf)) return setErroForm("CPF inválido.");
     if (!email.trim()) return setErroForm("Informe o e-mail.");
-    if (cargo === "CABEÇA" && !telefone.trim())
+    if (cargoFinal === "CABEÇA" && !telefone.trim())
       return setErroForm("Informe o telefone com WhatsApp.");
-    if (cargo === "LIDERANÇA" && !zonaEleitoral.trim())
+    if (cargoFinal === "LIDERANÇA" && !zonaEleitoral.trim())
       return setErroForm("Informe a zona eleitoral.");
-    if (cargo === "ATIVISTA" && (!telefone.trim() || !endereco.trim()))
+    if (cargoFinal === "ATIVISTA" && (!telefone.trim() || !endereco.trim()))
       return setErroForm("Informe telefone e endereço.");
 
     setSubmitting(true);
     const gps = await obterGPS();
+
+    if (!gps.gps_ok) {
+      setSubmitting(false);
+      return setErroForm(
+        "Localização obrigatória para contratação. Permita o acesso à sua localização nas configurações do navegador e tente novamente.",
+      );
+    }
 
     const payload: Record<string, unknown> = {
       token,
@@ -93,9 +197,9 @@ export function FormularioCadastro({ token }: Props) {
       longitude: gps.longitude,
       gps_ok: gps.gps_ok,
     };
-    if (cargo === "CABEÇA") payload.telefone = telefone.trim();
-    if (cargo === "LIDERANÇA") payload.zona_eleitoral = zonaEleitoral.trim();
-    if (cargo === "ATIVISTA") {
+    if (cargoFinal === "CABEÇA") payload.telefone = telefone.trim();
+    if (cargoFinal === "LIDERANÇA") payload.zona_eleitoral = zonaEleitoral.trim();
+    if (cargoFinal === "ATIVISTA") {
       payload.telefone = telefone.trim();
       payload.endereco = endereco.trim();
     }
@@ -111,7 +215,7 @@ export function FormularioCadastro({ token }: Props) {
       } else if ("erro" in res) {
         setErroForm(res.erro);
       } else {
-        setErroForm("Resposta inesperada do servidor.");
+        setErroForm(`Resposta do servidor: ${JSON.stringify(res)}`);
       }
     } catch {
       setErroForm("Erro de conexão. Tente novamente.");
@@ -120,91 +224,9 @@ export function FormularioCadastro({ token }: Props) {
     }
   }
 
-  // Floating-label input (a lógica permanece intacta — apenas o visual muda)
-  function Field({
-    id,
-    label,
-    children,
-    hint,
-  }: {
-    id: string;
-    label: string;
-    children: React.ReactNode;
-    hint?: React.ReactNode;
-  }) {
-    return (
-      <div className="group relative">
-        <label
-          htmlFor={id}
-          className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.08em] text-[#5F5E5A]"
-        >
-          {label}
-        </label>
-        {children}
-        {hint}
-      </div>
-    );
-  }
-
-  const inputBase =
-    "w-full rounded-xl border border-[#D3D1C7] bg-white px-4 py-3.5 text-[15px] text-[#042C53] placeholder:text-[#5F5E5A]/50 shadow-[0_1px_2px_rgba(4,44,83,0.04)] transition-all duration-150 focus:outline-none focus:border-[#185FA5] focus:ring-4 focus:ring-[#378ADD]/15 hover:border-[#5F5E5A]/40";
-
-  // Stepper premium com linha conectora
-  function Stepper() {
-    const steps = [
-      { n: 1, label: "Código" },
-      { n: 2, label: "Seus dados" },
-      { n: 3, label: "Confirmação" },
-    ];
-    return (
-      <div className="relative">
-        <div className="absolute left-4 right-4 top-4 h-[2px] bg-[#E5E2D8]">
-          <div
-            className="h-full bg-gradient-to-r from-[#185FA5] to-[#378ADD] transition-all duration-500"
-            style={{ width: `${((etapaAtual - 1) / (steps.length - 1)) * 100}%` }}
-          />
-        </div>
-        <ol className="relative flex items-start justify-between">
-          {steps.map((s) => {
-            const concluida = s.n < etapaAtual;
-            const ativa = s.n === etapaAtual;
-            return (
-              <li key={s.n} className="flex flex-col items-center gap-2">
-                <div
-                  className={`relative flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ${
-                    concluida
-                      ? "bg-[#0F6E56] text-white shadow-[0_4px_12px_rgba(15,110,86,0.35)]"
-                      : ativa
-                        ? "bg-gradient-to-br from-[#185FA5] to-[#378ADD] text-white shadow-[0_4px_14px_rgba(24,95,165,0.45)] ring-4 ring-[#378ADD]/20"
-                        : "bg-white text-[#5F5E5A] ring-1 ring-[#D3D1C7]"
-                  }`}
-                >
-                  {concluida ? (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M5 12l5 5L20 7" />
-                    </svg>
-                  ) : (
-                    s.n
-                  )}
-                </div>
-                <span
-                  className={`text-[11px] font-semibold tracking-wide ${
-                    ativa || concluida ? "text-[#042C53]" : "text-[#5F5E5A]"
-                  }`}
-                >
-                  {s.label}
-                </span>
-              </li>
-            );
-          })}
-        </ol>
-      </div>
-    );
-  }
-
   return (
     <form onSubmit={handleSubmit} className="space-y-7">
-      <Stepper />
+      <Stepper etapaAtual={etapaAtual} />
 
       {erroForm && (
         <div
@@ -223,8 +245,9 @@ export function FormularioCadastro({ token }: Props) {
             id="idRecrutador"
             type="text"
             value={idRecrutador}
-            onChange={(e) => setIdRecrutador(e.target.value.toUpperCase())}
+            onChange={(e) => handleChangeRecrutador(e.target.value)}
             onBlur={handleBlurRecrutador}
+            maxLength={20}
             className={`${inputBase} font-mono tracking-wider`}
             placeholder="Ex: C12345 ou CAND-001"
           />
