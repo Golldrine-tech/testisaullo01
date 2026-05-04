@@ -247,7 +247,7 @@ export function FormularioCadastro({ token }: Props) {
             value={idRecrutador}
             onChange={(e) => handleChangeRecrutador(e.target.value)}
             onBlur={handleBlurRecrutador}
-            maxLength={20}
+            maxLength={idRecrutador.toUpperCase().startsWith("CAND-") ? 20 : 6}
             className={`${inputBase} font-mono tracking-wider`}
             placeholder="Ex: C12345 ou CAND-001"
           />
