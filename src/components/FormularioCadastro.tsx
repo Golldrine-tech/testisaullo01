@@ -180,13 +180,6 @@ export function FormularioCadastro({ token }: Props) {
     setSubmitting(true);
     const gps = await obterGPS();
 
-    if (!gps.gps_ok) {
-      setSubmitting(false);
-      return setErroForm(
-        "Localização obrigatória para contratação. Permita o acesso à sua localização nas configurações do navegador e tente novamente.",
-      );
-    }
-
     const payload: Record<string, unknown> = {
       token,
       id_recrutador: idRecrutador.trim(),

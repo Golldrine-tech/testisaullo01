@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_N8N_URL || "https://saullo-n8n-webhook.bbxa48.easypanel.host";
+const BASE_URL = import.meta.env.VITE_N8N_URL || "https://n8n.vota.am";
 
 export type VerificarTokenResponse =
   | { acao: "mostrar_formulario" }
@@ -6,9 +6,10 @@ export type VerificarTokenResponse =
   | { erro: string };
 
 export async function verificarToken(token: string): Promise<VerificarTokenResponse> {
-  // [N8N - Fluxo 1] GET /webhook/596b6ae9-0685-4c0e-9fe3-2fca556a87f6/ativar/:token
+  // [N8N - Fluxo 1] GET /webhook/verificar-token
+  // Responsável por: checar status do token no banco, retornar acao: mostrar_formulario | redirecionar_lp
   const res = await fetch(
-    `${BASE_URL}/webhook/596b6ae9-0685-4c0e-9fe3-2fca556a87f6/ativar/${encodeURIComponent(token)}`,
+    `${BASE_URL}/webhook/verificar-token?token=${encodeURIComponent(token)}`,
     { method: "GET" },
   );
   if (!res.ok) {
@@ -39,10 +40,11 @@ export async function cadastrar(payload: Record<string, unknown>): Promise<Cadas
 }
 
 export function registrarEvento(payload: Record<string, unknown>): void {
-  // [N8N - Fluxo 3] POST /webhook/27aed129-4894-4d63-a426-5c87b9880210
+  // [N8N - Fluxo 3] POST /webhook/evento
+  // Responsável por: registrar APROXIMACAO ou COMPARTILHAMENTO no banco com GPS e canal
   // Fire-and-forget
   try {
-    fetch(`${BASE_URL}/webhook/27aed129-4894-4d63-a426-5c87b9880210`, {
+    fetch(`${BASE_URL}/webhook/evento`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
